@@ -1,0 +1,27 @@
+-- Sacred Voice — reference schema (documentation)
+-- Source of truth for migrations is supabase/migrations/*.sql in timestamp order.
+-- Use `supabase db push` or paste migrations into the SQL editor; do not run this file
+-- unless you merge it with a fresh project intentionally.
+
+-- Core tables (abbreviated; see migrations for full constraints, indexes, triggers):
+--
+-- public.profiles
+--   id uuid PK → auth.users(id), credits, plan, timestamps
+-- public.generations
+--   id uuid PK, user_id → auth.users, prompt, narrative, audio path, voice_id,
+--   generation_meta jsonb, is_public, …
+-- public.payments
+--   ledger rows for Razorpay / NowPayments; updated by verified webhooks (service role)
+-- public.payment_orders
+--   Razorpay order mirror (optional / legacy paths)
+-- public.webhook_events
+--   idempotency log; service role only
+--
+-- RLS summary (after 20260423120000_rls_hardening.sql):
+--   profiles:     SELECT, INSERT own (id = auth.uid()); no client UPDATE
+--   generations:  SELECT / INSERT / UPDATE / DELETE own (user_id = auth.uid())
+--   payment_orders: SELECT own
+--   payments:       SELECT own
+--   webhook_events: no policies → no direct client access
+--
+-- auth.users is managed by Supabase Auth (GoTrue); enable MFA / leaked-password protection in Dashboard.
